@@ -78,7 +78,7 @@ router.post('/login', async (req,res) => {
     // Send Token + user info (without password)
     res.status(200).json({ 
       token,
-      user : { id: user._id , name: user.name, email: user.email}
+      user : { id: user._id , name: user.name, email: user.email, role: user.role}
      });
 
   } catch (error){

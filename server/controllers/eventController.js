@@ -15,7 +15,7 @@ exports.createEvent = async (req, res) => {
     await event.save();
     res.status(201).json(event);
   } catch (err) {
-    console.error(err);
+    console.error('CREATE EVENT ERROR:',err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -40,7 +40,7 @@ exports.getEvents = async (req, res) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     const [events, total] = await Promise.all([
-      Event.find(query).sort({ date: 1 }).skip(skip).limit(Number(limit)).populate('createdBy', 'name email'),
+      Event.find(query).sort({ date: 1 }).skip(skip).limit(Number(limit)).populate('createdBy', 'name email role'),
       Event.countDocuments(query)
     ]);
 
@@ -49,7 +49,7 @@ exports.getEvents = async (req, res) => {
       meta: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / limit) }
     });
   } catch (err) {
-    console.error(err);
+    console.error('LIST EVENTS ERROR:',err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -57,7 +57,7 @@ exports.getEvents = async (req, res) => {
 // Get single event
 exports.getEventById = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id).populate('createdBy', 'name email');
+    const event = await Event.findById(req.params.id).populate('createdBy', 'name email role');
     if (!event) return res.status(404).json({ error: 'Event not found' });
     res.json(event);
   } catch (err) {
@@ -73,15 +73,19 @@ exports.updateEvent = async (req, res) => {
     if (!event) return res.status(404).json({ error: 'Event not found' });
 
     // allow if creator or admin
-    if (String(event.createdBy) !== req.userId && req.userRole !== 'admin') {
-      return res.status(403).json({ error: 'Forbidden' });
+    const isOwner = String(event.createdBy) === String(req.userId);
+    const isAdmin = req.userRole === 'admin';
+    if (!isOwner && !isAdmin) return res.status(403).json({ error: 'Forbidden' });
+
+    const allowed = ['title','description','date','venue','department','category','tags','imageUrl'];
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) event[key] = req.body[key];
     }
 
-    Object.assign(event, req.body); // shallow merge of fields
     await event.save();
     res.json(event);
   } catch (err) {
-    console.error(err);
+    console.error('UPDATE EVENT ERROR:',err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -92,14 +96,14 @@ exports.deleteEvent = async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found' });
 
-    if (String(event.createdBy) !== req.userId && req.userRole !== 'admin') {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
+    const isOwner = String(event.createdBy) === String(req.userId);
+    const isAdmin = req.userRole === 'admin';
+    if (!isOwner && !isAdmin) return res.status(403).json({ error: 'Forbidden' });
 
-    await event.remove();
+    await event.deleteOne();
     res.json({ message: 'Event deleted' });
   } catch (err) {
-    console.error(err);
+    console.error('DELETE EVENT ERROR:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };

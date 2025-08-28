@@ -9,6 +9,18 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
-})
+});
+
+// auto logout if 401
+api.interceptors.response.use(
+  res => res,
+  err => {
+    if (err?.response?.status === 401) {
+      localStorage.removeItem('token');
+      // window.location.href = '/login'; // uncomment if you want immediate redirect
+    }
+    return Promise.reject(err);
+  }
+);
 
 export default api
