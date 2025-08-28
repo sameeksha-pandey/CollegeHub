@@ -17,7 +17,9 @@ api.interceptors.response.use(
   err => {
     if (err?.response?.status === 401) {
       localStorage.removeItem('token');
-      // window.location.href = '/login'; // uncomment if you want immediate redirect
+      window.dispatchEvent(new Event('auth-logout'))
+      // optional immediate redirect:
+      // window.location.assign('/login')
     }
     return Promise.reject(err);
   }

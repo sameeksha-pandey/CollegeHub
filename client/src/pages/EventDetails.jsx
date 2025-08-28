@@ -23,10 +23,10 @@ export default function EventDetails(){
 
   const canEdit = () => {
     if (!user || !event) return false;
-    const isOwner = event.createdBy && (event.createdBy._id === user.id);
-    const isAdmin = user.role === 'admin';
+    const isOwner = event.createdBy?._id === user?.id || event.createdBy?._id === user?._id ;
+    const isAdmin = user?.role === 'admin';
     return isOwner || isAdmin;
-  };
+}
 
   const onDelete = async () => {
     if (!window.confirm('Delete this event?')) return;
@@ -38,12 +38,11 @@ export default function EventDetails(){
     }
   };
 
-
+  if (error) return <div className="text-red-600">{error}</div>
   if (!event) return <div>Loading...</div>
 
    return (
     <div className="bg-white p-6 rounded shadow">
-      {error && <div className="text-red-600 mb-3">{error}</div>}
       <h1 className="text-2xl font-bold">{event.title}</h1>
       <p className="text-sm text-gray-600">{new Date(event.date).toLocaleString()}</p>
       {event.imageUrl && <img src={event.imageUrl} alt="" className="mt-3 rounded max-h-72 object-cover" />}
