@@ -7,20 +7,37 @@ export default function Events() {
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('')
 
   useEffect(() => {
     fetchEvents()
-  }, [page, search])
+  }, [page, search, category])
 
   const fetchEvents = async () => {
-    const res = await api.get(`/events?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`)
-    setEvents(res.data.events)
-  }
+  const res = await api.get(
+    `/events?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&category=${category}`
+  )
+  setEvents(res.data.events)
+}
+
 
   return (
     <div>
       <div className="mb-4 flex gap-2">
         <input placeholder="Search events" value={search} onChange={e => setSearch(e.target.value)} className="border p-2 rounded flex-1" />
+      
+      <select
+    value={category}
+    onChange={(e) => setCategory(e.target.value)}
+    className="border p-2 rounded"
+  >
+    <option value="">All Categories</option>
+    <option value="Technical">Technical</option>
+    <option value="Cultural">Cultural</option>
+    <option value="Sports">Sports</option>
+    <option value="Other">Other</option>
+      </select>
+
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">

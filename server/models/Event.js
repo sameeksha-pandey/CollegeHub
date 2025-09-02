@@ -6,7 +6,7 @@ const eventSchema = new mongoose.Schema({
   date: { type: Date, required: true },             // event date/time
   venue: { type: String },
   department: { type: String, default: 'General' }, // e.g. CSE, ECE
-  category: { type: String, default: 'Cultural' },  // e.g. Tech, Cultural
+  category: { type: String,enum: ['Technical', 'Cultural', 'Sports', 'Other'], default:'Other'}, 
   tags: [String],
   imageUrl: { type: String },                       
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
