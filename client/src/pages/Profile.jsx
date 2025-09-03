@@ -2,11 +2,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import api from '../lib/api'
 import EventCard from '../components/EventCard'
+import toast from 'react-hot-toast'
 
 export default function Profile(){
   const { user } = useContext(AuthContext)
   const [myEvents, setMyEvents] = useState([])
-  const [error, setError] = useState('')
 
   useEffect(() => {
     (async () => {
@@ -14,7 +14,7 @@ export default function Profile(){
         const res = await api.get('/user/my-events')
         setMyEvents(res.data)
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to load your events')
+        toast.error(err.response?.data?.error || 'Failed to load your events')
       }
     })()
   }, [])
@@ -31,7 +31,6 @@ export default function Profile(){
 
       <div>
         <h3 className="text-lg font-semibold mb-3">Your Events</h3>
-        {error && <div className="text-red-600 mb-2">{error}</div>}
         {myEvents.length === 0 ? (
           <div className="text-gray-600">You haven't created any events yet.</div>
         ) : (

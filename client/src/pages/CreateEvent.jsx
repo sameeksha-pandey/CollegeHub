@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import api from '../lib/api'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 export default function CreateEvent(){
   const [form, setForm] = useState({ title: '', description: '', date: '', venue: '', department: '', category: '', tags: '' })
   const [image, setImage] = useState(null)
-  const [error, setError] = useState('')
   const navigate = useNavigate()
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
@@ -31,9 +31,11 @@ export default function CreateEvent(){
       await api.post('/events', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
+      toast.success('Event created successfully!')
+      
       navigate('/events')
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create event')
+      toast.error(err.response?.data?.error || 'Failed to create event')
     }
   }
   
@@ -42,7 +44,6 @@ export default function CreateEvent(){
       onSubmit={submit}
       className="max-w-lg bg-white p-6 rounded shadow space-y-3"
     >
-      {error && <div className="text-red-600 mb-2">{error}</div>}
       <label className="block">Title
         <input name="title" value={form.title} onChange={handleChange} className="w-full p-2 border rounded"/>
       </label>

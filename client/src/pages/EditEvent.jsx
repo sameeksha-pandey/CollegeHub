@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { AuthContext } from '../context/AuthContext';
-
+import toast from 'react-hot-toast'
 export default function EditEvent() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -12,7 +12,6 @@ export default function EditEvent() {
     title: '', description: '', date: '', venue: '', department: '', category: '', tags: '',  imageUrl: '' 
   });
   const [image, setImage] = useState(null) 
-  const [error, setError] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -30,7 +29,7 @@ export default function EditEvent() {
           imageUrl: ev.imageUrl || ''
         });
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to load event');
+        toast.error(err.response?.data?.error || 'Failed to load event');
       }
     })();
   }, [id]);
@@ -58,9 +57,11 @@ export default function EditEvent() {
       await api.put(`/events/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
+      toast.success('Event updated successfully!')
+
       navigate(`/events/${id}`)
     } catch (err) {
-      setError(err.response?.data?.error || 'Update failed')
+      toast.error(err.response?.data?.error || 'Update failed')
     }
   }
 
@@ -72,7 +73,6 @@ export default function EditEvent() {
       className="max-w-xl bg-white p-6 rounded shadow space-y-3"
     >
       <h2 className="text-xl font-bold mb-4">Edit Event</h2>
-      {error && <div className="text-red-600 mb-3">{error}</div>}
 
       <label className="block">Title
         <input name="title" value={form.title} onChange={handleChange} className="w-full p-2 border rounded"/>

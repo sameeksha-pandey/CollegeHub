@@ -2,11 +2,12 @@ import React, { useEffect, useState, useContext } from 'react'
 import { useParams, useNavigate, Link} from 'react-router-dom'
 import api from '../lib/api';
 import { AuthContext } from '../context/AuthContext';
+import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 
 export default function EventDetails(){
   const { id } = useParams();
   const [event, setEvent] = useState(null);
-  const [error, setError] = useState('');
   const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState('')
 
@@ -23,7 +24,7 @@ export default function EventDetails(){
       const res = await api.get(`/events/${id}`)
       setEvent(res.data)
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load event');
+      toast.error(err.response?.data?.error || 'Failed to load event');
     }
   }
 
@@ -56,22 +57,28 @@ export default function EventDetails(){
     if (!window.confirm('Delete this event?')) return;
     try {
       await api.delete(`/events/${id}`);
+      toast.success('Event deleted')
       navigate('/events');
     } catch (err) {
-      setError(err.response?.data?.error || 'Delete failed');
+      toast.error(err.response?.data?.error || 'Delete failed');
     }
   };
 
-  if (error) return <div className="text-red-600">{error}</div>
   if (!event) return <div>Loading...</div>
 
    return (
+    <motion.div 
+  className="bg-white p-6 rounded shadow"
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.4 }}
+>
     <div className="bg-white p-6 rounded shadow">
       <h1 className="text-2xl font-bold">{event.title}</h1>
       <p className="text-sm text-gray-600">{new Date(event.date).toLocaleString()}</p>
        {event.imageUrl && (
         <img
-          src={`http://localhost:5000${event.imageUrl}`}   // ✅ prepend backend URL
+          src={`http://localhost:5000${event.imageUrl}`}   // prepend backend URL
           alt={event.title}
           className="mt-3 rounded max-h-72 object-cover"
         />
@@ -110,5 +117,6 @@ export default function EventDetails(){
         </div>
       )}
     </div>
+  </motion.div>
   );
 }

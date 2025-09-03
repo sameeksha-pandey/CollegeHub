@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import api from '../lib/api'
 import EventCard from '../components/EventCard'
+import { motion } from 'framer-motion'
 
 export default function Events() {
   const [events, setEvents] = useState([])
@@ -22,6 +23,25 @@ export default function Events() {
 
 
   return (
+    <motion.div 
+    className="grid md:grid-cols-2 gap-4"
+  initial="hidden"
+  animate="show"
+  variants={{
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 }
+    }
+  }}
+>
+  {events.map(ev => (
+    <motion.div key={ev._id}
+      variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+    >
+      <EventCard event={ev}/>
+    </motion.div>
+  ))}
     <div>
       <div className="mb-4 flex gap-2">
         <input placeholder="Search events" value={search} onChange={e => setSearch(e.target.value)} className="border p-2 rounded flex-1" />
@@ -50,5 +70,6 @@ export default function Events() {
         <button onClick={() => setPage(p => p + 1)} className="px-3 py-1 bg-gray-200 rounded">Next</button>
       </div>
     </div>
+  </motion.div>
   )
 }
