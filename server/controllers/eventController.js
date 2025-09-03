@@ -3,13 +3,15 @@ const Event = require('../models/Event');
 // Create event
 exports.createEvent = async (req, res) => {
   try {
-    const { title, description, date, venue, department, category, tags, imageUrl } = req.body;
-    if (!title || !description || !date) return res.status(400).json({ error: 'Title, description and date required' });
+    const { title, description, date, venue, department, category, tags } = req.body;
+    if (!title || !description || !date) return res.status(400).json({ error: 'Title, description and date are required' });
 
     const event = new Event({
       title, description, date, venue, department, category,
-      tags: tags || [], imageUrl,
+      tags: tags ? (Array.isArray(tags) ? tags : tags.split(',')) : [],
+      imageUrl: req.file ? `/uploads/${req.file.filename}` : null,   // store uploaded file
       createdBy: req.userId // set by auth middleware
+
     });
 
     await event.save();
@@ -28,10 +30,12 @@ exports.getEvents = async (req, res) => {
 
     if (department) query.department = department;
     if (category) query.category = category;
-    if (search) query.$or = [
+    if (search){
+      query.$or = [
       { title: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } }
     ];
+  }
     if (fromDate || toDate) {
       query.date = {};
       if (fromDate) query.date.$gte = new Date(fromDate);
@@ -77,15 +81,23 @@ exports.updateEvent = async (req, res) => {
     const isAdmin = req.userRole === 'admin';
     if (!isOwner && !isAdmin) return res.status(403).json({ error: 'Forbidden' });
 
-    const allowed = ['title','description','date','venue','department','category','tags','imageUrl'];
+    // fields to update
+    const allowed = ['title', 'description', 'date', 'venue', 'department', 'category', 'tags'];
     for (const key of allowed) {
-      if (req.body[key] !== undefined) event[key] = req.body[key];
+      if (req.body[key] !== undefined) {
+        event[key] = req.body[key];
+      }
+    }
+
+    // handle new image upload
+    if (req.file) {
+      event.imageUrl = `/uploads/${req.file.filename}`;
     }
 
     await event.save();
     res.json(event);
   } catch (err) {
-    console.error('UPDATE EVENT ERROR:',err);
+    console.error('UPDATE EVENT ERROR:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };

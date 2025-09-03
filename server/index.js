@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json()); 
 
+//Serve uploaded images
+app.use('/uploads', express.static('uploads'));  
+
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 
@@ -18,6 +21,9 @@ app.use('/api/user', userRoutes);
 
 const eventRoutes = require('./routes/events');
 app.use('/api/events', eventRoutes);
+
+const commentRoutes = require('./routes/comments')
+app.use('/api/comments', commentRoutes)
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
